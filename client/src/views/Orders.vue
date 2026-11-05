@@ -27,6 +27,59 @@
         </div>
       </div>
 
+      <div class="card submitted-card">
+        <div class="card-header submitted-header">
+          <h3 class="card-title">{{ t('orders.submitted.title') }} ({{ submittedOrders.length }})</h3>
+          <p class="submitted-description">{{ t('orders.submitted.description') }}</p>
+        </div>
+        <div v-if="submittedError" class="submitted-error">{{ submittedError }}</div>
+        <div v-else-if="submittedOrders.length === 0" class="submitted-empty">
+          {{ t('orders.submitted.empty') }}
+        </div>
+        <div v-else class="table-container">
+          <table class="orders-table">
+            <thead>
+              <tr>
+                <th class="col-order-number">{{ t('orders.table.orderNumber') }}</th>
+                <th class="col-datetime">{{ t('orders.submitted.submittedAt') }}</th>
+                <th class="col-items">{{ t('orders.table.items') }}</th>
+                <th class="col-lead">{{ t('orders.submitted.leadTime') }}</th>
+                <th class="col-date">{{ t('orders.table.expectedDelivery') }}</th>
+                <th class="col-status">{{ t('orders.table.status') }}</th>
+                <th class="col-value">{{ t('orders.submitted.totalCost') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="order in submittedOrders" :key="order.id">
+                <td class="col-order-number"><strong>{{ order.order_number }}</strong></td>
+                <td class="col-datetime">{{ formatDateTime(order.submitted_at) }}</td>
+                <td class="col-items">
+                  <details class="items-details">
+                    <summary class="items-summary">
+                      {{ t('orders.itemsCount', { count: order.items.length }) }}
+                    </summary>
+                    <div class="items-dropdown">
+                      <div v-for="item in order.items" :key="item.item_sku" class="item-entry">
+                        <span class="item-name">{{ item.item_name }}</span>
+                        <span class="item-meta">{{ t('orders.quantity') }}: {{ item.quantity }} @ {{ formatCost(item.unit_cost, 2) }}</span>
+                      </div>
+                    </div>
+                  </details>
+                </td>
+                <td class="col-lead">
+                  <span class="lead-time">{{ t('orders.submitted.leadTimeDays', { days: order.lead_time_days }) }}</span>
+                </td>
+                <td class="col-date">{{ formatDate(order.expected_delivery) }}</td>
+                <td class="col-status">
+                  <span class="badge info">{{ t(`status.${order.status.toLowerCase()}`) }}</span>
+                </td>
+                <td class="col-value"><strong>{{ formatCost(order.total_cost, 2) }}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-header">
           <h3 class="card-title">{{ t('orders.allOrders') }} ({{ orders.length }})</h3>
@@ -83,6 +136,7 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { api } from '../api'
 import { useFilters } from '../composables/useFilters'
 import { useI18n } from '../composables/useI18n'
+import { formatCurrencyWithDecimals } from '../utils/currency'
 
 export default {
   name: 'Orders',
@@ -146,14 +200,51 @@ export default {
     const formatDate = (dateString) => {
       const { currentLocale } = useI18n()
       const locale = currentLocale.value === 'ja' ? 'ja-JP' : 'en-US'
-      return new Date(dateString).toLocaleDateString(locale, {
+      const date = new Date(dateString)
+      if (!dateString || isNaN(date.getTime())) return '—'
+      return date.toLocaleDateString(locale, {
         year: 'numeric',
         month: 'short',
         day: 'numeric'
       })
     }
 
-    onMounted(loadOrders)
+    const formatDateTime = (dateString) => {
+      const { currentLocale } = useI18n()
+      const locale = currentLocale.value === 'ja' ? 'ja-JP' : 'en-US'
+      const date = new Date(dateString)
+      if (!dateString || isNaN(date.getTime())) return '—'
+      return date.toLocaleString(locale, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    }
+
+    const formatCost = (amount, decimals = 2) => {
+      return formatCurrencyWithDecimals(Number(amount) || 0, currentCurrency.value, decimals)
+    }
+
+    // Submitted restocking orders (not affected by the global filters)
+    const submittedOrders = ref([])
+    const submittedError = ref(null)
+
+    const loadSubmittedOrders = async () => {
+      try {
+        submittedError.value = null
+        const result = await api.getRestockOrders()
+        submittedOrders.value = Array.isArray(result) ? result : []
+      } catch (err) {
+        submittedError.value = 'Failed to load submitted orders: ' + err.message
+      }
+    }
+
+    onMounted(() => {
+      loadOrders()
+      loadSubmittedOrders()
+    })
 
     return {
       t,
@@ -163,6 +254,10 @@ export default {
       getOrdersByStatus,
       getOrderStatusClass,
       formatDate,
+      formatDateTime,
+      formatCost,
+      submittedOrders,
+      submittedError,
       currencySymbol,
       translateProductName,
       translateCustomerName
@@ -201,6 +296,54 @@ export default {
 
 .col-value {
   width: 120px;
+}
+
+/* Submitted orders */
+.col-datetime {
+  width: 170px;
+}
+
+.col-lead {
+  width: 130px;
+}
+
+.submitted-card {
+  margin-bottom: 1.5rem;
+}
+
+.submitted-header {
+  display: block;
+}
+
+.submitted-description {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.submitted-empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.submitted-error {
+  padding: 0.75rem 1rem;
+  color: #b91c1c;
+  font-size: 0.875rem;
+}
+
+.lead-time {
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
+  border-radius: 6px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+  font-size: 0.938rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 /* Items details styling */
