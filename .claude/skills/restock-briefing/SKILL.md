@@ -16,7 +16,13 @@ If they did not give a budget, ask once; if they want a quick answer, show the r
 
 ## How to get there
 
-`/api/restocking/recommendations?budget=` does the ranking and the budget fill; its logic is in `server/main.py` (`recommend_restock`). Use it as the starting point and add the context it lacks: current stock and reorder points from `/api/inventory`, and shortages from `/api/backlog`. The data sources, definitions and quirks are in [`../explain-the-numbers/references/data-map.md`](../explain-the-numbers/references/data-map.md); read it first. The quirk that matters most here: few forecast SKUs exist in inventory, so "stock left" is unknown for most recommended items. Say that rather than guessing.
+`/api/restocking/recommendations?budget=` does the ranking and the budget fill; its logic is in `server/main.py` (`restock_candidates`, `recommend_restock`). Use it as the starting point and add what it leaves out. The data sources, definitions and quirks are in [`../explain-the-numbers/references/data-map.md`](../explain-the-numbers/references/data-map.md); read it first. What the endpoint does not tell you:
+
+- **Stock of 0 may mean "not in inventory".** A SKU missing from `inventory.json` counts as zero stock, and few forecast SKUs exist there. Check each recommended SKU against `/api/inventory` and say which quantities are a maximum because stock is unknown. `/api/backlog` sometimes shows available quantities for those items; mention them.
+- **Only funded lines come back**, plus `total_needed_cost`. The left-out list in section 3 you rebuild from `/api/demand` with the same rule as `restock_candidates` (forecast minus stock, skipping items without cost or lead time).
+- **Ranking ignores the backlog.** Urgency is trend, then demand growth. A high-priority backlog item with flat demand can end up unfunded; flag it when that happens.
+- **No delivery date until an order is placed.** "Earliest full delivery" is today plus the longest lead time among the funded lines.
+- **Items below reorder point that have no forecast** have no price or lead time, so they cannot be costed here. List them as a risk.
 
 Do not place the order (`POST /api/restocking/orders`) unless the person explicitly approves the briefing. Placing it changes what everyone sees on the Orders tab.
 

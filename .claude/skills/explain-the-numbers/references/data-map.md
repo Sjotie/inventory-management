@@ -29,6 +29,8 @@ All data is mock data, loaded into memory at server start from `server/data/*.js
 Check these against the files when you rely on them; mock data gets regenerated.
 
 - **Spending ignores filters.** "Spending in London" cannot be answered from `/api/spending/*`; say so instead of returning the global number.
+- **Unknown query parameters are ignored, not rejected.** `?warehouse=London` on an endpoint without that filter returns everything with status 200. Check the "Filters that work" column, or the endpoint signature in `server/main.py`, before trusting a filtered result.
+- **Cost types don't line up.** `spending.json` splits costs into procurement, operational, labor and overhead; transactions use the types Purchase, Operational and Overhead (no labor). Treating Purchase as procurement is a reasonable reading, not a definition in the data; say it is your reading.
 - **Two warehouse vocabularies.** Inventory and orders use city names (San Francisco, London, Tokyo); transactions use letters (A, B, C). There is no mapping in the data; do not invent one.
 - **Transactions cover one month only** (September 2025), while `spending.json` holds a full year. They will not add up to each other.
 - **Order category is set per order, not per line item.** An order in category Sensors can contain a Compression Spring. Category answers describe the order's label, not what was physically in it.
