@@ -18,6 +18,8 @@ Use the Task tool with these specialized subagents for appropriate tasks:
 
 ### Skills
 - **backend-api-test** skill: Use when writing or modifying tests in `tests/backend` directory with pytest and FastAPI TestClient
+- **explain-the-numbers** skill: business questions about inventory, orders, spending or demand, answered with traceable numbers; its `references/data-map.md` lists the data quirks
+- **restock-briefing** skill: a one-page reorder briefing within a budget, for a buyer to approve
 
 ### MCP Tools
 - **ALWAYS use GitHub MCP tools** (`mcp__github__*`) for ALL GitHub operations
