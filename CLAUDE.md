@@ -54,6 +54,8 @@ npm install && npm run dev
 - `GET /api/dashboard/summary` - All filters
 - `GET /api/demand`, `/api/backlog` - No filters
 - `GET /api/spending/*` - Summary, monthly, categories, transactions
+- `GET /api/restocking/recommendations?budget=` - Forecast items to restock within budget (increasing trend first, stock on hand subtracted)
+- `GET|POST /api/restocking/orders` - Submitted restocking orders (in memory, lost on restart); lead time = slowest item's `lead_time_days`
 
 ## Common Issues
 1. Use unique keys in v-for (not `index`) - use `sku`, `month`, etc.

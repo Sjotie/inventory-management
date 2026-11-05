@@ -6,6 +6,8 @@ export default {
     orders: '注文',
     finance: '財務',
     demandForecast: '需要予測',
+    restocking: '補充発注',
+    reports: 'レポート',
     companyName: '触媒コンポーネンツ',
     subtitle: '在庫管理システム'
   },
@@ -126,6 +128,49 @@ export default {
       status: 'ステータス',
       expectedDelivery: '予定配達日',
       actualDelivery: '実際の配達日'
+    },
+    submitted: {
+      title: '発注済み補充注文',
+      description: '補充発注タブから発注された注文',
+      empty: '発注済みの補充注文はまだありません。',
+      submittedAt: '発注日',
+      leadTime: 'リードタイム',
+      leadTimeDays: '{days}日',
+      totalCost: '合計費用'
+    }
+  },
+
+  // Restocking
+  restocking: {
+    title: '補充発注',
+    description: '予算を設定し、予測需要の緊急度が高い品目を補充します',
+    budget: '利用可能な予算',
+    budgetHint: 'スライダーで今回の補充に使える金額を設定します',
+    recommendedTotal: '推奨合計',
+    remaining: '残り予算',
+    coverage: '需要カバー率',
+    coverageHint: '必要額 {total} のうち',
+    recommendations: '推奨品目',
+    noRecommendations: '予算を増やすと推奨品目が表示されます。',
+    nothingNeeded: '在庫ですべての予測需要をカバーしています。補充は不要です。',
+    priorityNote: 'トレンド（増加を優先）、次に需要の伸び率で順位付けしています。手持ち在庫は予測から差し引いています。',
+    partial: '一部',
+    placeOrder: '発注する',
+    placing: '発注中...',
+    orderPlaced: '注文 {number} を発注しました。{days}日後に納品予定です。',
+    viewInOrders: '注文で確認',
+    orderFailed: '発注できませんでした',
+    table: {
+      sku: 'SKU',
+      itemName: '品目',
+      trend: 'トレンド',
+      forecast: '予測',
+      onHand: '手持ち在庫',
+      needed: '必要数',
+      orderQty: '発注数',
+      unitCost: '単価',
+      lineTotal: '小計',
+      leadTime: 'リードタイム'
     }
   },
 
@@ -188,6 +233,32 @@ export default {
     }
   },
 
+  // Reports
+  reports: {
+    title: 'パフォーマンスレポート',
+    description: '四半期の業績指標と月次トレンドを表示',
+    loading: 'レポートを読み込み中...',
+    loadError: 'レポートの読み込みに失敗しました: {message}',
+    noData: '現在のフィルターに一致する注文はありません',
+    quarterlyPerformance: '四半期業績',
+    quarter: '四半期',
+    totalOrders: '注文総数',
+    totalRevenue: '売上合計',
+    avgOrderValue: '平均注文額',
+    fulfillmentRate: '履行率',
+    monthlyRevenueTrend: '月次売上トレンド',
+    monthOverMonth: '前月比分析',
+    month: '月',
+    orders: '注文数',
+    revenue: '売上',
+    change: '増減',
+    growthRate: '成長率',
+    totalRevenueTotal: '売上合計',
+    avgMonthlyRevenue: '月平均売上',
+    totalOrdersTotal: '注文総数',
+    bestQuarter: '最高業績の四半期'
+  },
+
   // Filters
   filters: {
     timePeriod: '期間',
@@ -204,6 +275,7 @@ export default {
     shipped: '出荷済み',
     processing: '処理中',
     backordered: 'バックオーダー',
+    submitted: '発注済み',
     inStock: '在庫あり',
     lowStock: '在庫僅少',
     adequate: '適量'
